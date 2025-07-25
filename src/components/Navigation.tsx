@@ -20,7 +20,7 @@ const Navigation = () => {
   const { user, signOut } = useAuth();
 
   const navigation = [
-    { name: "Projects", href: "#projects", icon: FolderOpen },
+    { name: "Projects", href: "/projects", icon: FolderOpen },
     { name: "Teams", href: "#teams", icon: Users },
     { name: "Gallery", href: "#gallery", icon: Image },
   ];
@@ -41,14 +41,14 @@ const Navigation = () => {
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-4">
               {navigation.map((item) => (
-                <a
+                <button
                   key={item.name}
-                  href={item.href}
+                  onClick={() => item.href.startsWith('#') ? document.querySelector(item.href)?.scrollIntoView({ behavior: 'smooth' }) : navigate(item.href)}
                   className="flex items-center gap-2 text-muted-foreground hover:text-foreground px-3 py-2 rounded-md text-sm font-medium transition-smooth"
                 >
                   <item.icon size={16} />
                   {item.name}
-                </a>
+                </button>
               ))}
             </div>
           </div>
@@ -56,7 +56,7 @@ const Navigation = () => {
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <>
-                <Button variant="default">
+                <Button variant="default" onClick={() => navigate("/projects/new")}>
                   <Plus size={16} />
                   New Project
                 </Button>
@@ -127,20 +127,33 @@ const Navigation = () => {
           <div className="md:hidden animate-slide-in">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-card rounded-lg mt-2 shadow-card">
               {navigation.map((item) => (
-                <a
+                <button
                   key={item.name}
-                  href={item.href}
-                  className="flex items-center gap-2 text-muted-foreground hover:text-foreground block px-3 py-2 rounded-md text-base font-medium"
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={() => {
+                    if (item.href.startsWith('#')) {
+                      document.querySelector(item.href)?.scrollIntoView({ behavior: 'smooth' });
+                    } else {
+                      navigate(item.href);
+                    }
+                    setIsMenuOpen(false);
+                  }}
+                  className="flex items-center gap-2 text-muted-foreground hover:text-foreground block px-3 py-2 rounded-md text-base font-medium w-full text-left"
                 >
                   <item.icon size={16} />
                   {item.name}
-                </a>
+                </button>
               ))}
               <div className="pt-2 space-y-2">
                 {user ? (
                   <>
-                    <Button variant="default" className="w-full justify-start">
+                    <Button 
+                      variant="default" 
+                      className="w-full justify-start"
+                      onClick={() => {
+                        navigate("/projects/new");
+                        setIsMenuOpen(false);
+                      }}
+                    >
                       <Plus size={16} />
                       New Project
                     </Button>
