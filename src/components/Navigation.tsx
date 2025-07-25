@@ -1,9 +1,23 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, FolderOpen, Users, Image, Plus } from "lucide-react";
+import { Menu, X, FolderOpen, Users, Image, Plus, LogOut, User } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { toast } from "sonner";
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
 
   const navigation = [
     { name: "Projects", href: "#projects", icon: FolderOpen },
@@ -16,9 +30,9 @@ const Navigation = () => {
       <div className="container mx-auto px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 cursor-pointer" onClick={() => navigate("/")}>
               <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                ProjectFlow
+                BuildIT
               </h1>
             </div>
           </div>
@@ -40,13 +54,61 @@ const Navigation = () => {
           </div>
 
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="ghost">
-              Sign In
-            </Button>
-            <Button variant="default">
-              <Plus size={16} />
-              New Project
-            </Button>
+            {user ? (
+              <>
+                <Button variant="default">
+                  <Plus size={16} />
+                  New Project
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                      <Avatar className="h-8 w-8">
+                        <AvatarFallback>
+                          {user.email?.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end" forceMount>
+                    <DropdownMenuLabel className="font-normal">
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">
+                          {user.email}
+                        </p>
+                        <p className="text-xs leading-none text-muted-foreground">
+                          Welcome to BuildIT
+                        </p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => navigate("/profile")}>
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Profile</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={async () => {
+                        const { error } = await signOut();
+                        if (error) {
+                          toast.error("Error signing out");
+                        } else {
+                          toast.success("Signed out successfully");
+                          navigate("/");
+                        }
+                      }}
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Sign out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            ) : (
+              <Button variant="ghost" onClick={() => navigate("/auth")}>
+                Sign In
+              </Button>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -76,13 +138,42 @@ const Navigation = () => {
                 </a>
               ))}
               <div className="pt-2 space-y-2">
-                <Button variant="ghost" className="w-full justify-start">
-                  Sign In
-                </Button>
-                <Button variant="default" className="w-full justify-start">
-                  <Plus size={16} />
-                  New Project
-                </Button>
+                {user ? (
+                  <>
+                    <Button variant="default" className="w-full justify-start">
+                      <Plus size={16} />
+                      New Project
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start"
+                      onClick={async () => {
+                        const { error } = await signOut();
+                        if (error) {
+                          toast.error("Error signing out");
+                        } else {
+                          toast.success("Signed out successfully");
+                          navigate("/");
+                        }
+                        setIsMenuOpen(false);
+                      }}
+                    >
+                      <LogOut size={16} />
+                      Sign Out
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      navigate("/auth");
+                      setIsMenuOpen(false);
+                    }}
+                  >
+                    Sign In
+                  </Button>
+                )}
               </div>
             </div>
           </div>
